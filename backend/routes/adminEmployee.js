@@ -5,21 +5,25 @@ const users = require('../models/users');
 const {createNewUser, 
   fetchAllUser,
   getOneUser,deleteOneUser,
-    updateOneUser} =require('../controllers/usersController')
+    updateOneUser,
+    loginUser} =require('../controllers/usersController')
 
 adminEmployees.get('/',fetchAllUser);
 
 //SINGLE employee details
-adminEmployees.get('/:username',getOneUser);
+adminEmployees.get('/:employeeId',getOneUser);
 
 //Add new employees
 adminEmployees.post('/', createNewUser);
 
+// Login endpoint
+adminEmployees.post('/login', loginUser);
+
 // Delete employees
-adminEmployees.delete('/:username',deleteOneUser);
+adminEmployees.delete('/:employeeId',deleteOneUser);
 
 // Update employees
-adminEmployees.patch('/:username',updateOneUser);
+adminEmployees.patch('/:employeeId',updateOneUser);
 
 
 module.exports = adminEmployees;

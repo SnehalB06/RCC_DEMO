@@ -1,26 +1,53 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const cors = require('cors');
 require('dotenv').config();
-const employeeRoutes = require('./routes/adminEmployee')
+
+const employeeRoutes = require('./routes/adminEmployee');
+const timesheetRoutes = require('./routes/timeSheetRoutes');
+const projectRoutes = require('./routes/projectRoutes');
 
 
 const app = express();
 
-app.use(express.json());
-app.use('/api/admin',employeeRoutes);
+// Enable CORS
+app.use(cors({
+  origin: 'http://localhost:3000',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+  allowedHeaders: ['Content-Type']
+}));
 
-//connect to db
-mongoose.connect(process.env.MONGO_URL)
-.then(()=>{
-//listening
-app.listen(process.env.PORT,()=>{
-  console.log(`Listening  on Port ${process.env.PORT}`);
+app.use(express.json());
+
+app.use('/api/admin', employeeRoutes);
+app.use('/api/timesheets', timesheetRoutes);
+app.use('/api/projects', projectRoutes);
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'OK', message: 'Server is running' });
 });
 
-
+//connect to db
+console.log('🔄 Attempting to connect to MongoDB...');
+mongoose.connect(process.env.MONGO_URL, {
+  connectTimeoutMS: 10000,
+  serverSelectionTimeoutMS: 10000
+})
+.then(()=>{
+  console.log('✅ MongoDB connected successfully');
+  //listening
+  app.listen(process.env.PORT,()=>{
+    console.log(`✅ Listening on Port ${process.env.PORT}`);
+  });
 })
 .catch((err)=>{
-  console.log(err);
+  console.log('❌ MongoDB connection error:', err.message);
+  console.log('⚠️ Starting server anyway for health checks...');
+  app.listen(process.env.PORT,()=>{
+    console.log(`⚠️ Server listening on Port ${process.env.PORT} (without DB)`);
+  });
 })
 
 
